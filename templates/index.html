@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Intelligent Enterprise Assistant</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f8ff; /* light blue background */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .chatbox {
+            background-color: #ffffff; /* white box */
+            border-radius: 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            width: 500px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .messages {
+            border: 1px solid #cce7e0;
+            border-radius: 10px;
+            padding: 10px;
+            height: 350px;
+            overflow-y: scroll;
+            background-color: #e6f7f1; /* light green-blue */
+            margin-bottom: 10px;
+        }
+
+        .message {
+            margin: 5px 0;
+            padding: 10px 15px;
+            border-radius: 15px;
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+
+        .user {
+            background-color: #007acc; /* blue */
+            color: #ffffff;
+            align-self: flex-end;
+        }
+
+        .bot {
+            background-color: #32cd32; /* green */
+            color: #ffffff;
+            align-self: flex-start;
+        }
+
+        input[type="text"], input[type="file"], button {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: #32cd32; /* green button */
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        button:hover {
+            background-color: #28a428;
+        }
+    </style>
+</head>
+<body>
+    <div class="chatbox">
+        <h2 style="text-align:center; color:#007acc;">Intelligent Enterprise Assistant</h2>
+        <div class="messages" id="messages"></div>
+        <input type="text" id="user_input" placeholder="Ask me anything...">
+        <button onclick="sendMessage()">Send</button>
+        <input type="file" id="doc_input">
+        <button onclick="uploadDoc()">Upload Document</button>
+    </div>
+
+    <script>
+        function sendMessage() {
+            var input = document.getElementById("user_input").value;
+            if(!input) return;
+            fetch("/chat", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ message: input })
+            })
+            .then(response => response.json())
+            .then(data => {
+                var messagesDiv = document.getElementById("messages");
+                messagesDiv.innerHTML += "<div class='message user'>You: " + input + "</div>";
+                messagesDiv.innerHTML += "<div class='message bot'>Bot: " + data.reply + "</div>";
+                document.getElementById("user_input").value = "";
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            });
+        }
+
+        function uploadDoc() {
+            var file = document.getElementById("doc_input").files[0];
+            if(!file) return;
+            var formData = new FormData();
+            formData.append("file", file);
+            fetch("/upload", { method: "POST", body: formData })
+            .then(response => response.json())
+            .then(data => {
+                var messagesDiv = document.getElementById("messages");
+                messagesDiv.innerHTML += "<div class='message bot'>Bot: " + data.reply + "</div>";
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            });
+        }
+    </script>
+</body>
+</html>
